@@ -1,0 +1,3 @@
+=== RESULTADOS DE BÚSQUEDA DE HECHIZO ===
+¡Piedra de Hogar (8690) encontrada en el offset: 0xA60!
+¡Piedra de Hogar (8690) encontrada en el offset: 0xA6C!

@@ -1,0 +1,10 @@
+=== DIAGNÓSTICO DE MEMORIA WOW ===
+Hora: 22:09:11.072
+Personaje Local: Name='Lianjou', TargetGuid=1072995, FocusGuid=1072995, HP=25813/26384, Casteando=0, Canalizando=0, Casteo2=1185456
+Jugadores detectados a tu alrededor: 6
+  - 'Jugador_105F63': Dist=10,3 yds, Casteando=0, Canalizando=0, Stealth=False
+  - 'NPC/Mob': Dist=11,5 yds, Casteando=0, Canalizando=0, Stealth=False
+  - 'NPC/Mob': Dist=171,1 yds, Casteando=0, Canalizando=0, Stealth=False
+  - 'NPC/Mob': Dist=185,6 yds, Casteando=0, Canalizando=0, Stealth=False
+  - 'NPC/Mob': Dist=198,9 yds, Casteando=0, Canalizando=0, Stealth=False
+  - 'NPC/Mob': Dist=242,6 yds, Casteando=0, Canalizando=0, Stealth=False

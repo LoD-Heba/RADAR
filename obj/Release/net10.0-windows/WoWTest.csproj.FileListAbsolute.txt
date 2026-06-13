@@ -1,0 +1,14 @@
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Release\net10.0-windows\WoWTest.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Release\net10.0-windows\WoWTest.AssemblyInfoInputs.cache
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Release\net10.0-windows\WoWTest.AssemblyInfo.cs
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Release\net10.0-windows\WoWTest.csproj.CoreCompileInputs.cache
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Release\net10.0-windows\WoWTest.genruntimeconfig.cache
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Release\net10.0-windows\RadarWOW.exe
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Release\net10.0-windows\RadarWOW.deps.json
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Release\net10.0-windows\RadarWOW.runtimeconfig.json
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Release\net10.0-windows\RadarWOW.dll
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Release\net10.0-windows\RadarWOW.pdb
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Release\net10.0-windows\RadarWOW.dll
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Release\net10.0-windows\refint\RadarWOW.dll
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Release\net10.0-windows\RadarWOW.pdb
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Release\net10.0-windows\ref\RadarWOW.dll

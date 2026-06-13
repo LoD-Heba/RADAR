@@ -1,0 +1,3 @@
+=== SCAN ENEMIGO Jugador_4D53 ===
+¡Encontrado 8690 en curObj de Jugador_4D53 a offset: 0xA60!
+¡Encontrado 8690 en curObj de Jugador_4D53 a offset: 0xA6C!

@@ -1,0 +1,16 @@
+=== DUMP DE FLOATS ALREDEDOR DE COORDENADAS LOCALES ===
+  Offset +0x790 = 0,00000
+  Offset +0x794 = 0,00000
+  Offset +0x798 = 5080,11865
+  Offset +0x79C = 2279,09741
+  Offset +0x7A0 = 356,53403
+  Offset +0x7A4 = 0,00000
+  Offset +0x7A8 = 2,42931
+  Offset +0x7AC = -0,93462
+  Offset +0x7B0 = 0,00000
+  Offset +0x7B4 = 0,00000
+  Offset +0x7B8 = 0,00000
+  Offset +0x7BC = 0,00000
+  Offset +0x7C0 = 0,00000
+  Offset +0x7C4 = 0,00000
+  Offset +0x7C8 = 1,00000

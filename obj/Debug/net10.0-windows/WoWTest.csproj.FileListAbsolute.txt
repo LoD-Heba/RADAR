@@ -1,0 +1,33 @@
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0-windows\WoWTest.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0-windows\WoWTest.AssemblyInfoInputs.cache
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0-windows\WoWTest.AssemblyInfo.cs
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0-windows\WoWTest.csproj.CoreCompileInputs.cache
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0-windows\WoWTest.genruntimeconfig.cache
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Debug\net10.0-windows\RadarWOW.exe
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Debug\net10.0-windows\RadarWOW.deps.json
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Debug\net10.0-windows\RadarWOW.runtimeconfig.json
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Debug\net10.0-windows\RadarWOW.dll
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Debug\net10.0-windows\RadarWOW.pdb
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0-windows\RadarWOW.dll
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0-windows\refint\RadarWOW.dll
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0-windows\RadarWOW.pdb
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0-windows\ref\RadarWOW.dll
+C:\Users\LoD-Heba\Desktop\Radar\bin\Debug\net10.0-windows\RadarWOW.exe
+C:\Users\LoD-Heba\Desktop\Radar\bin\Debug\net10.0-windows\RadarWOW.deps.json
+C:\Users\LoD-Heba\Desktop\Radar\bin\Debug\net10.0-windows\RadarWOW.runtimeconfig.json
+C:\Users\LoD-Heba\Desktop\Radar\bin\Debug\net10.0-windows\RadarWOW.dll
+C:\Users\LoD-Heba\Desktop\Radar\bin\Debug\net10.0-windows\RadarWOW.pdb
+C:\Users\LoD-Heba\Desktop\Radar\obj\Debug\net10.0-windows\WoWTest.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\LoD-Heba\Desktop\Radar\obj\Debug\net10.0-windows\WoWTest.AssemblyInfoInputs.cache
+C:\Users\LoD-Heba\Desktop\Radar\obj\Debug\net10.0-windows\WoWTest.AssemblyInfo.cs
+C:\Users\LoD-Heba\Desktop\Radar\obj\Debug\net10.0-windows\WoWTest.csproj.CoreCompileInputs.cache
+C:\Users\LoD-Heba\Desktop\Radar\obj\Debug\net10.0-windows\RadarWOW.dll
+C:\Users\LoD-Heba\Desktop\Radar\obj\Debug\net10.0-windows\refint\RadarWOW.dll
+C:\Users\LoD-Heba\Desktop\Radar\obj\Debug\net10.0-windows\RadarWOW.pdb
+C:\Users\LoD-Heba\Desktop\Radar\obj\Debug\net10.0-windows\WoWTest.genruntimeconfig.cache
+C:\Users\LoD-Heba\Desktop\Radar\obj\Debug\net10.0-windows\ref\RadarWOW.dll
+c:\Users\LoD-Heba\Desktop\Radar_NUEVO\RadarWOW.exe
+c:\Users\LoD-Heba\Desktop\Radar_NUEVO\RadarWOW.deps.json
+c:\Users\LoD-Heba\Desktop\Radar_NUEVO\RadarWOW.runtimeconfig.json
+c:\Users\LoD-Heba\Desktop\Radar_NUEVO\RadarWOW.dll
+c:\Users\LoD-Heba\Desktop\Radar_NUEVO\RadarWOW.pdb

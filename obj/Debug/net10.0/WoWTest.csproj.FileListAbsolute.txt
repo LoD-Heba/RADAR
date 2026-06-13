@@ -1,0 +1,14 @@
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0\WoWTest.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0\WoWTest.AssemblyInfoInputs.cache
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0\WoWTest.AssemblyInfo.cs
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0\WoWTest.csproj.CoreCompileInputs.cache
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Debug\net10.0\WoWTest.exe
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Debug\net10.0\WoWTest.deps.json
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Debug\net10.0\WoWTest.runtimeconfig.json
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Debug\net10.0\WoWTest.dll
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\bin\Debug\net10.0\WoWTest.pdb
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0\WoWTest.dll
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0\refint\WoWTest.dll
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0\WoWTest.pdb
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0\WoWTest.genruntimeconfig.cache
+C:\Users\LoD-Heba\Desktop\Prueba oddfets WOW\obj\Debug\net10.0\ref\WoWTest.dll
