@@ -90,51 +90,72 @@ namespace WoWTest
             Application.SetCompatibleTextRenderingDefault(false);
 
             // 1. Inicializar KeyAuth con tus datos del panel web de KeyAuth
-            // REEMPLAZA ESTOS VALORES CON LOS DE TU PANEL DE KEYAUTH
             api keyAuthApp = new api(
                 name: "RadarWow",
                 ownerid: "JY66e6PUAH",
+                secret: "4278f356aa6fdaee7b468a353330ec44bb11b4ed302bebf6c837272471e79568", // Reemplaza aquí con el 'Secret' de tu app en KeyAuth
                 version: "1.0"
             );
 
-            // Se ejecuta 'await' porque 'init' es una tarea asíncrona que conecta a internet en tu KeyAuth.cs
             await keyAuthApp.init();
 
-            // 2. Pedir la licencia al usuario mediante una ventana flotante simple
+            // Ruta del archivo local donde guardaremos la clave de licencia
+            string rutaLicenciaLocal = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "licencia.txt");
             string licenciaUsuario = "";
 
-            using (Form loginForm = new Form { Width = 300, Height = 150, Text = "Activación de Licencia", StartPosition = FormStartPosition.CenterScreen, FormBorderStyle = FormBorderStyle.FixedDialog, MaximizeBox = false })
+            // INTENTO 1: Comprobar si el archivo de licencia ya existe localmente
+            if (File.Exists(rutaLicenciaLocal))
             {
-                Label lbl = new Label { Left = 10, Top = 20, Text = "Introduce tu clave de producto:", Width = 250 };
-                TextBox txt = new TextBox { Left = 10, Top = 45, Width = 260 };
-                Button btn = new Button { Text = "Activar", Left = 190, Top = 80, DialogResult = DialogResult.OK };
-                loginForm.Controls.Add(lbl); loginForm.Controls.Add(txt); loginForm.Controls.Add(btn);
-                loginForm.AcceptButton = btn;
+                licenciaUsuario = File.ReadAllText(rutaLicenciaLocal).Trim();
+            }
 
-                if (loginForm.ShowDialog() == DialogResult.OK)
+            // Si no hay archivo guardado o estaba vacío, procedemos a pedir la clave mediante la interfaz
+            if (string.IsNullOrEmpty(licenciaUsuario))
+            {
+                using (Form loginForm = new Form { Width = 300, Height = 150, Text = "Activación de Licencia", StartPosition = FormStartPosition.CenterScreen, FormBorderStyle = FormBorderStyle.FixedDialog, MaximizeBox = false })
                 {
-                    licenciaUsuario = txt.Text;
-                }
-                else
-                {
-                    return; // El usuario cerró la ventana de activación
+                    Label lbl = new Label { Left = 10, Top = 20, Text = "Introduce tu clave de producto:", Width = 250 };
+                    TextBox txt = new TextBox { Left = 10, Top = 45, Width = 260 };
+                    Button btn = new Button { Text = "Activar", Left = 190, Top = 80, DialogResult = DialogResult.OK };
+                    loginForm.Controls.Add(lbl); loginForm.Controls.Add(txt); loginForm.Controls.Add(btn);
+                    loginForm.AcceptButton = btn;
+
+                    if (loginForm.ShowDialog() == DialogResult.OK)
+                    {
+                        licenciaUsuario = txt.Text.Trim();
+                    }
+                    else
+                    {
+                        return; // El usuario canceló la operación cerrando la ventana
+                    }
                 }
             }
 
-            // 3. Validar la clave en los servidores de KeyAuth de forma asíncrona
+            // 2. Validar la clave de forma asíncrona (sea leída del archivo o ingresada a mano)
             await keyAuthApp.license(licenciaUsuario);
 
-            // Verificar si la respuesta fue exitosa (usando las propiedades en minúscula de tu archivo)
+            // Verificar si la respuesta fue exitosa
             if (!keyAuthApp.response.success)
             {
                 MessageBox.Show($"Error de activación: {keyAuthApp.response.message}", "Licencia Inválida", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return; // Detiene la ejecución y cierra el programa si no es válida o si el HWID no coincide
+
+                // Si la clave guardada en el archivo local falló (por ejemplo, porque expiró), 
+                // borramos el archivo para que la próxima vez le vuelva a pedir una nueva al usuario.
+                if (File.Exists(rutaLicenciaLocal))
+                {
+                    File.Delete(rutaLicenciaLocal);
+                }
+                return;
             }
 
-            // El servidor de KeyAuth vincula el HWID automáticamente en la primera activación.
-            MessageBox.Show("¡Licencia verificada correctamente!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // SÍ FUE EXITOSA: Si la clave es válida y todavía no teníamos el archivo guardado en el disco, lo creamos
+            if (!File.Exists(rutaLicenciaLocal))
+            {
+                File.WriteAllText(rutaLicenciaLocal, licenciaUsuario);
+                MessageBox.Show("¡Licencia verificada y guardada correctamente en este equipo!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
 
-            // 4. Continuar con la carga normal de tu Radar si la licencia es válida
+            // 3. Continuar con la carga normal de tu Radar si la licencia es válida
             int selectedPid = 0;
             using (var selector = new ProcessSelectorForm())
             {
@@ -864,12 +885,10 @@ namespace WoWTest
 
                 // Mensaje de estado dinámico
                 bool isConnected = activeChar != null;
+                // Mensaje de estado dinámico (Simplificado y limpio sin Tether)
                 if (char1.Connected)
                 {
-                    if (selectedTetherGuid != 0)
-                        statusMessage = $"Conectado a {char1.Name} (PID: {char1.Pid}). Objetivo: {selectedTetherName}";
-                    else
-                        statusMessage = $"Conectado a {char1.Name} (PID: {char1.Pid}). Cambia de Pj en Ajustes.";
+                    statusMessage = $"Conectado a {char1.Name} (PID: {char1.Pid}). Cambia de Pj en Ajustes.";
                 }
                 else
                 {
@@ -2165,12 +2184,22 @@ namespace WoWTest
 
         public void UpdateTargets(List<RadarForm.PlayerInfo> targets, int displayTime)
         {
+            // NUEVA CORRECCIÓN: Si el radar principal está oculto (por minimizado/cambio de ventana),
+            // forzamos a la ventana de detalles a ocultarse y no procesamos nada.
+            if (radar == null || !radar.Visible)
+            {
+                if (this.Visible)
+                {
+                    this.Visible = false;
+                }
+                return;
+            }
+
             if (targets.Count > 0)
             {
                 currentTargets = new List<RadarForm.PlayerInfo>(targets);
                 lastTargetTime = DateTime.Now;
 
-                // Asegurar visibilidad y opacidad premium activa
                 if (!this.Visible)
                 {
                     this.Visible = true;
@@ -2181,7 +2210,7 @@ namespace WoWTest
             {
                 if (lastTargetTime == DateTime.MinValue)
                 {
-                    // Estado inicial sin amenazas activas
+                    currentTargets.Clear();
                     this.Visible = false;
                 }
                 else
@@ -2190,13 +2219,24 @@ namespace WoWTest
                     if (elapsed >= (double)displayTime)
                     {
                         currentTargets.Clear();
-                        this.Visible = false; // Ocultar por completo
+                        this.Opacity = 0.0;
+                        this.Visible = false;
                     }
                     else
                     {
-                        // Desvanecimiento progresivo y elegante
                         double t = elapsed / (double)displayTime;
-                        this.Opacity = Math.Max(0.35, 0.95 - (0.60 * t));
+                        double currentOpacity = 0.95 - (0.95 * t);
+
+                        if (currentOpacity <= 0.01)
+                        {
+                            currentTargets.Clear();
+                            this.Opacity = 0.0;
+                            this.Visible = false;
+                        }
+                        else
+                        {
+                            this.Opacity = currentOpacity;
+                        }
                     }
                 }
             }

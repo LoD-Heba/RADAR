@@ -13,7 +13,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 using System.Threading;
 using System.Runtime.InteropServices;
-using System.Windows.Forms; // Cambiado para usar los cuadros de diálogo de Windows Forms
+using System.Windows.Forms;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Linq;
@@ -34,9 +34,10 @@ namespace KeyAuth
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern ushort GlobalFindAtom(string lpString);
 
-        public string name, ownerid, version, path, seed;
+        public string name, ownerid, secret, version, path, seed;
 
-        public api(string name, string ownerid, string version, string path = null)
+        // CORRECCIÓN: Añadido el parámetro obligatorio 'secret' solicitado por la API web de KeyAuth
+        public api(string name, string ownerid, string secret, string version, string path = null)
         {
             if (ownerid.Length != 10)
             {
@@ -46,6 +47,7 @@ namespace KeyAuth
 
             this.name = name;
             this.ownerid = ownerid;
+            this.secret = secret;
             this.version = version;
             this.path = path;
         }
@@ -104,7 +106,7 @@ namespace KeyAuth
         }
         #endregion
 
-        private static string sessionid, enckey;
+        private static string sessionid;
         bool initialized;
 
         public async Task init()
@@ -264,8 +266,7 @@ namespace KeyAuth
 
         public static void error(string message)
         {
-            // CORREGIDO: Adaptado para usar el MessageBox de Windows Forms de tu proyecto
-            System.Windows.Forms.MessageBox.Show(message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            System.Windows.Forms.MessageBox.Show(message, "Error de Licencia", MessageBoxButtons.OK, MessageBoxIcon.Error);
             Environment.Exit(1);
         }
 
@@ -289,11 +290,12 @@ namespace KeyAuth
                 using (var client = new HttpClient(handler))
                 {
                     client.Timeout = TimeSpan.FromSeconds(20);
+                    // Endpoint oficial v1.3 API de KeyAuth
                     HttpResponseMessage response = await client.PostAsync("https://keyauth.win/api/1.3/", content);
 
                     if (!response.IsSuccessStatusCode)
                     {
-                        error("Connection failure to license server.");
+                        error("Falló la conexión con los servidores de KeyAuth.");
                         TerminateProcess(GetCurrentProcess(), 1);
                         return "";
                     }
@@ -304,7 +306,7 @@ namespace KeyAuth
             }
             catch (Exception ex)
             {
-                error("Connection failure: " + ex.Message);
+                error("Error de red o comunicación: " + ex.Message);
                 TerminateProcess(GetCurrentProcess(), 1);
                 return "";
             }
@@ -384,19 +386,7 @@ namespace KeyAuth
         private json_wrapper response_decoder = new json_wrapper(new response_structure());
     }
 
-    #region Criptografia Corregida
-    public static class encryption
-    {
-        public static byte[] str_to_byte_arr(string hex)
-        {
-            int NumberChars = hex.Length;
-            byte[] bytes = new byte[NumberChars / 2];
-            for (int i = 0; i < NumberChars; i += 2)
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            return bytes;
-        }
-    }
-
+    #region json_serialization
     public class json_wrapper
     {
         public static bool is_serializable(Type to_check) => true;
