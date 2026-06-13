@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\LoD-Heba\\Desktop\\Radar\\WoWTest.csproj": {}
+    "C:\\Users\\LoD-Heba\\Desktop\\RADAR\\WoWTest.csproj": {}
   },
   "projects": {
-    "c:\\Users\\LoD-Heba\\Desktop\\Radar\\WoWTest.csproj": {
+    "C:\\Users\\LoD-Heba\\Desktop\\RADAR\\WoWTest.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\LoD-Heba\\Desktop\\Radar\\WoWTest.csproj",
+        "projectUniqueName": "C:\\Users\\LoD-Heba\\Desktop\\RADAR\\WoWTest.csproj",
         "projectName": "RadarWOW",
-        "projectPath": "c:\\Users\\LoD-Heba\\Desktop\\Radar\\WoWTest.csproj",
+        "projectPath": "C:\\Users\\LoD-Heba\\Desktop\\RADAR\\WoWTest.csproj",
         "packagesPath": "C:\\Users\\LoD-Heba\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\LoD-Heba\\Desktop\\Radar\\obj\\",
+        "outputPath": "C:\\Users\\LoD-Heba\\Desktop\\RADAR\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\LoD-Heba\\AppData\\Roaming\\NuGet\\NuGet.Config",
