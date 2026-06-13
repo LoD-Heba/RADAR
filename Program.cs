@@ -393,17 +393,21 @@ namespace WoWTest
         {
             try
             {
-                if (!string.IsNullOrEmpty(Config.CustomSoundPath) && System.IO.File.Exists(Config.CustomSoundPath))
+                // Ruta fija del sonido por defecto en la carpeta del ejecutable
+                string rutaSonidoPorDefecto = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "neadby.wav");
+
+                if (System.IO.File.Exists(rutaSonidoPorDefecto))
                 {
-                    if (customPlayer == null || customPlayer.SoundLocation != Config.CustomSoundPath)
+                    if (customPlayer == null || customPlayer.SoundLocation != rutaSonidoPorDefecto)
                     {
-                        customPlayer = new System.Media.SoundPlayer(Config.CustomSoundPath);
+                        customPlayer = new System.Media.SoundPlayer(rutaSonidoPorDefecto);
                         customPlayer.Load();
                     }
                     customPlayer.Play();
                 }
                 else
                 {
+                    // Fallback: Si el usuario borra por accidente el 'alarma.wav', suena el pitido del sistema
                     System.Media.SystemSounds.Asterisk.Play();
                 }
             }
@@ -2611,72 +2615,6 @@ namespace WoWTest
             };
             this.Controls.Add(numDisplayTime);
             yOffset += 35;
-
-            Label lblCustomSound = new Label();
-            lblCustomSound.Text = "Sonido Detección (.wav):";
-            lblCustomSound.Location = new Point(20, yOffset);
-            lblCustomSound.AutoSize = true;
-            lblCustomSound.Font = new Font("Segoe UI", 9.5f, FontStyle.Regular);
-            this.Controls.Add(lblCustomSound);
-            yOffset += 22;
-
-            TextBox txtCustomSound = new TextBox();
-            txtCustomSound.Text = radar.Config.CustomSoundPath;
-            txtCustomSound.Location = new Point(20, yOffset);
-            txtCustomSound.Width = 160;
-            txtCustomSound.BackColor = Color.FromArgb(32, 34, 38);
-            txtCustomSound.ForeColor = Color.White;
-            txtCustomSound.BorderStyle = BorderStyle.FixedSingle;
-            this.Controls.Add(txtCustomSound);
-
-            Button btnBrowse = new Button();
-            btnBrowse.Text = "Buscar";
-            btnBrowse.Location = new Point(190, yOffset - 2);
-            btnBrowse.Width = 70;
-            btnBrowse.Height = 24;
-            btnBrowse.FlatStyle = FlatStyle.Flat;
-            btnBrowse.FlatAppearance.BorderColor = Color.Gray;
-            btnBrowse.BackColor = Color.FromArgb(45, 48, 54);
-            btnBrowse.ForeColor = Color.White;
-            btnBrowse.Cursor = Cursors.Hand;
-            btnBrowse.Click += (s, e) =>
-            {
-                bool oldSettingsTopMost = this.TopMost;
-                bool oldRadarTopMost = radar.TopMost;
-                bool oldDetailsTopMost = radar.detailsForm != null ? radar.detailsForm.TopMost : false;
-
-                this.TopMost = false;
-                radar.TopMost = false;
-                if (radar.detailsForm != null) radar.detailsForm.TopMost = false;
-
-                try
-                {
-                    using (OpenFileDialog ofd = new OpenFileDialog())
-                    {
-                        ofd.Filter = "Archivos de Audio (*.wav)|*.wav";
-                        ofd.Title = "Seleccionar Sonido de Detección";
-                        if (ofd.ShowDialog(this) == DialogResult.OK)
-                        {
-                            txtCustomSound.Text = ofd.FileName;
-                            radar.Config.CustomSoundPath = ofd.FileName;
-                            radar.SaveConfig();
-                        }
-                    }
-                }
-                finally
-                {
-                    this.TopMost = oldSettingsTopMost;
-                    radar.TopMost = oldRadarTopMost;
-                    if (radar.detailsForm != null) radar.detailsForm.TopMost = oldDetailsTopMost;
-                }
-            };
-            this.Controls.Add(btnBrowse);
-
-            txtCustomSound.TextChanged += (s, e) =>
-            {
-                radar.Config.CustomSoundPath = txtCustomSound.Text;
-                radar.SaveConfig();
-            };
 
             chkPlayers.CheckedChanged += (s, e) =>
             {
