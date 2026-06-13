@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RadarWOW")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b13e3af8ca3167d4e53015bb9cf57a2c4939543b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+27393eab099a937a062d4be85ab49779c1a6a7af")]
 [assembly: System.Reflection.AssemblyProductAttribute("RadarWOW")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RadarWOW")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

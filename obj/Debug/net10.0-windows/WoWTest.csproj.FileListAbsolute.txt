@@ -31,3 +31,4 @@ c:\Users\LoD-Heba\Desktop\Radar_NUEVO\RadarWOW.deps.json
 c:\Users\LoD-Heba\Desktop\Radar_NUEVO\RadarWOW.runtimeconfig.json
 c:\Users\LoD-Heba\Desktop\Radar_NUEVO\RadarWOW.dll
 c:\Users\LoD-Heba\Desktop\Radar_NUEVO\RadarWOW.pdb
+C:\Users\LoD-Heba\Desktop\RADAR\obj\Debug\net10.0-windows\WoWTest.sourcelink.json

@@ -9,8 +9,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.IO;
+using KeyAuth;
 using System.Windows.Forms;
 using System.Media;
+using System.Threading.Tasks;
 namespace WoWTest
 {
     internal class Program
@@ -82,11 +84,57 @@ namespace WoWTest
         }
 
         [STAThread]
-        static void Main()
+        static async Task Main() // Cambiado a 'async Task' para soportar los procesos en segundo plano de KeyAuth
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            
+
+            // 1. Inicializar KeyAuth con tus datos del panel web de KeyAuth
+            // REEMPLAZA ESTOS VALORES CON LOS DE TU PANEL DE KEYAUTH
+            api keyAuthApp = new api(
+                name: "RadarWow",
+                ownerid: "JY66e6PUAH",
+                version: "1.0"
+            );
+
+            // Se ejecuta 'await' porque 'init' es una tarea asíncrona que conecta a internet en tu KeyAuth.cs
+            await keyAuthApp.init();
+
+            // 2. Pedir la licencia al usuario mediante una ventana flotante simple
+            string licenciaUsuario = "";
+
+            using (Form loginForm = new Form { Width = 300, Height = 150, Text = "Activación de Licencia", StartPosition = FormStartPosition.CenterScreen, FormBorderStyle = FormBorderStyle.FixedDialog, MaximizeBox = false })
+            {
+                Label lbl = new Label { Left = 10, Top = 20, Text = "Introduce tu clave de producto:", Width = 250 };
+                TextBox txt = new TextBox { Left = 10, Top = 45, Width = 260 };
+                Button btn = new Button { Text = "Activar", Left = 190, Top = 80, DialogResult = DialogResult.OK };
+                loginForm.Controls.Add(lbl); loginForm.Controls.Add(txt); loginForm.Controls.Add(btn);
+                loginForm.AcceptButton = btn;
+
+                if (loginForm.ShowDialog() == DialogResult.OK)
+                {
+                    licenciaUsuario = txt.Text;
+                }
+                else
+                {
+                    return; // El usuario cerró la ventana de activación
+                }
+            }
+
+            // 3. Validar la clave en los servidores de KeyAuth de forma asíncrona
+            await keyAuthApp.license(licenciaUsuario);
+
+            // Verificar si la respuesta fue exitosa (usando las propiedades en minúscula de tu archivo)
+            if (!keyAuthApp.response.success)
+            {
+                MessageBox.Show($"Error de activación: {keyAuthApp.response.message}", "Licencia Inválida", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return; // Detiene la ejecución y cierra el programa si no es válida o si el HWID no coincide
+            }
+
+            // El servidor de KeyAuth vincula el HWID automáticamente en la primera activación.
+            MessageBox.Show("¡Licencia verificada correctamente!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // 4. Continuar con la carga normal de tu Radar si la licencia es válida
             int selectedPid = 0;
             using (var selector = new ProcessSelectorForm())
             {
@@ -96,7 +144,7 @@ namespace WoWTest
                 }
                 else
                 {
-                    return; // Salir si el usuario cancela
+                    return;
                 }
             }
 
@@ -109,28 +157,28 @@ namespace WoWTest
         // ======================================================
         // OFFSETS DE WoW 3.3.5a (12340)
         // ======================================================
-        const uint STATIC_MAP_ID                = 0x00AB63BC;
-        const uint STATIC_LOCAL_PLAYER_GUID     = 0x00CA1238;
-        const uint STATIC_FOCUS_GUID            = 0x00BD07D0;
-        const uint ADDR_CLIENT_CONNECTION        = 0x00C79CE0;
-        const uint OFFSET_OBJ_MGR_FROM_CC        = 0x2ED0;
-        const uint OFFSET_FIRST_OBJECT           = 0x00AC;
-        const uint OFFSET_NEXT_OBJECT            = 0x003C;
-        const uint OFFSET_OBJ_GUID              = 0x30;
-        const uint OFFSET_OBJ_TYPE              = 0x14;
-        const uint OFFSET_OBJ_DESCRIPTOR        = 0x08;
+        const uint STATIC_MAP_ID = 0x00AB63BC;
+        const uint STATIC_LOCAL_PLAYER_GUID = 0x00CA1238;
+        const uint STATIC_FOCUS_GUID = 0x00BD07D0;
+        const uint ADDR_CLIENT_CONNECTION = 0x00C79CE0;
+        const uint OFFSET_OBJ_MGR_FROM_CC = 0x2ED0;
+        const uint OFFSET_FIRST_OBJECT = 0x00AC;
+        const uint OFFSET_NEXT_OBJECT = 0x003C;
+        const uint OFFSET_OBJ_GUID = 0x30;
+        const uint OFFSET_OBJ_TYPE = 0x14;
+        const uint OFFSET_OBJ_DESCRIPTOR = 0x08;
 
-        const uint DESC_HEALTH                   = 0x0060;
-        const uint DESC_MAX_HEALTH               = 0x0080;
-        const uint DESC_LEVEL                    = 0x00D8;
-        const uint DESC_BYTES_0                  = 0x005C;
+        const uint DESC_HEALTH = 0x0060;
+        const uint DESC_MAX_HEALTH = 0x0080;
+        const uint DESC_LEVEL = 0x00D8;
+        const uint DESC_BYTES_0 = 0x005C;
 
-        const uint ADDR_PLAYER_NAME_CACHE        = 0x00C5D938;
+        const uint ADDR_PLAYER_NAME_CACHE = 0x00C5D938;
 
-        
+
         [DllImport("user32.dll")]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, int wParam, int lParam);
-        
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
@@ -175,7 +223,7 @@ namespace WoWTest
             return foundWindow;
         }
 
-        
+
         public class WoWCharacter
         {
             public int Pid { get; set; }
@@ -235,7 +283,7 @@ namespace WoWTest
             public int CastingSpellId { get; set; } // Hechizo casteando
             public int ChannelSpellId { get; set; } // Hechizo canalizando
             public int CastingSpellId2 { get; set; } // Hechizo casteando alt (0xCB0)
-            
+
             public DateTime LastSeenTime { get; set; } = DateTime.Now;
             public bool IsGhost { get; set; } = false;
             public string GuildName { get; set; } = "";
@@ -257,7 +305,7 @@ namespace WoWTest
             public bool IsInitialized { get; set; }
         }
         private Dictionary<ulong, SmoothedPlayerState> playerStates = new Dictionary<ulong, SmoothedPlayerState>();
-        
+
         private Point dragStartPoint;
         private bool dragging = false;
 
@@ -265,7 +313,7 @@ namespace WoWTest
         private List<PlayerInfo> scannedPlayers = new List<PlayerInfo>();
         private WoWCharacter safeActiveChar = null;
         private System.Threading.Thread scannerThread;
-        
+
         private static readonly Font zFont = new Font("Arial", 6f);
         private static readonly Font xFont = new Font("Arial", 16f, FontStyle.Bold);
         private static readonly Font gearFont = new Font("Segoe UI Emoji", 14f);
@@ -277,7 +325,7 @@ namespace WoWTest
 
         private System.Windows.Forms.Timer updateTimer;
         private Dictionary<ulong, PlayerInfo> recentGhosts = new Dictionary<ulong, PlayerInfo>();
-        
+
         public class DisplayedEnemy
         {
             public PlayerInfo Player { get; set; }
@@ -285,7 +333,7 @@ namespace WoWTest
         }
         private Dictionary<ulong, DisplayedEnemy> displayedEnemies = new Dictionary<ulong, DisplayedEnemy>();
         private HashSet<ulong> activeEnemiesOnRadar = new HashSet<ulong>();
-        
+
         private string statusMessage = "Conectando a WoW...";
         private int targetPid = 0;
         public EnemyDetailsForm detailsForm = null!;
@@ -361,8 +409,8 @@ namespace WoWTest
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.Fuchsia; // Usado para clave de transparencia
             this.TransparencyKey = Color.Fuchsia; // Transparencia total
-            this.DoubleBuffered = true; 
-            this.TopMost = true; 
+            this.DoubleBuffered = true;
+            this.TopMost = true;
 
             Icon? customIcon = Program.GetApplicationIcon();
             if (customIcon != null)
@@ -392,13 +440,15 @@ namespace WoWTest
             detailsForm = new EnemyDetailsForm(this);
             detailsForm.Show(this); // Su dueño es este RadarForm para que minimicen/restauren juntos
 
-            this.Load += (s, e) => {
+            this.Load += (s, e) =>
+            {
                 // Posicionar a la derecha del radar con 6px de espacio
                 detailsForm.Location = new Point(this.Location.X + this.Width + 6, this.Location.Y);
             };
 
             // Mantener alineadas y escaladas ambas ventanas al redimensionar
-            this.Resize += (s, e) => {
+            this.Resize += (s, e) =>
+            {
                 if (this.Width != this.Height)
                 {
                     this.Width = this.Height; // Forzar proporción cuadrada para el círculo
@@ -412,7 +462,7 @@ namespace WoWTest
 
             // Temporizador (60 FPS)
             updateTimer = new System.Windows.Forms.Timer();
-            updateTimer.Interval = 16; 
+            updateTimer.Interval = 16;
             updateTimer.Tick += UpdateTick;
             updateTimer.Start();
 
@@ -443,8 +493,8 @@ namespace WoWTest
             base.WndProc(ref m);
         }
 
-        
-        
+
+
 
         public void SaveConfig()
         {
@@ -535,7 +585,7 @@ namespace WoWTest
             }
         }
 
-        
+
         private void MemoryScannerLoop()
         {
             while (true)
@@ -548,7 +598,7 @@ namespace WoWTest
                     if (char2.Connected) UpdateCharData(char2);
 
                     WoWCharacter activeChar = char1.Connected ? char1 : (char2.Connected ? char2 : null);
-                    
+
                     if (activeChar != null)
                     {
                         uint currentMapId = activeChar.Mem.ReadSafe<uint>((IntPtr)STATIC_MAP_ID);
@@ -567,12 +617,25 @@ namespace WoWTest
                         lock (dataLock)
                         {
                             scannedPlayers = rawPlayers;
-                            safeActiveChar = new WoWCharacter {
-                                X = activeChar.X, Y = activeChar.Y, Z = activeChar.Z, Facing = activeChar.Facing, Name = activeChar.Name,
-                                Pid = activeChar.Pid, FactionId = activeChar.FactionId, RaceId = activeChar.RaceId, TargetGuid = activeChar.TargetGuid,
+                            safeActiveChar = new WoWCharacter
+                            {
+                                X = activeChar.X,
+                                Y = activeChar.Y,
+                                Z = activeChar.Z,
+                                Facing = activeChar.Facing,
+                                Name = activeChar.Name,
+                                Pid = activeChar.Pid,
+                                FactionId = activeChar.FactionId,
+                                RaceId = activeChar.RaceId,
+                                TargetGuid = activeChar.TargetGuid,
                                 FocusGuid = activeChar.FocusGuid,
-                                Hp = activeChar.Hp, MaxHp = activeChar.MaxHp, ClassName = activeChar.ClassName, RaceName = activeChar.RaceName,
-                                CastingSpellId = activeChar.CastingSpellId, ChannelSpellId = activeChar.ChannelSpellId, CastingSpellId2 = activeChar.CastingSpellId2,
+                                Hp = activeChar.Hp,
+                                MaxHp = activeChar.MaxHp,
+                                ClassName = activeChar.ClassName,
+                                RaceName = activeChar.RaceName,
+                                CastingSpellId = activeChar.CastingSpellId,
+                                ChannelSpellId = activeChar.ChannelSpellId,
+                                CastingSpellId2 = activeChar.CastingSpellId2,
                                 Connected = true
                             };
                         }
@@ -629,9 +692,9 @@ namespace WoWTest
                             {
                                 IntPtr activeWindow = GetForegroundWindow();
                                 // Si la ventana activa no es WoW, ni el radar, ni los detalles, ni los ajustes -> ocultar
-                                if (activeWindow != wowHWnd && 
-                                    activeWindow != this.Handle && 
-                                    activeWindow != (detailsForm != null ? detailsForm.Handle : IntPtr.Zero) && 
+                                if (activeWindow != wowHWnd &&
+                                    activeWindow != this.Handle &&
+                                    activeWindow != (detailsForm != null ? detailsForm.Handle : IntPtr.Zero) &&
                                     activeWindow != (settingsForm != null ? settingsForm.Handle : IntPtr.Zero))
                                 {
                                     shouldHide = true;
@@ -669,7 +732,7 @@ namespace WoWTest
                 if (activeChar != null)
                 {
                     var smoothed = SmoothPlayerMovement(currentRawPlayers, activeChar);
-                    
+
                     // Filtrar por cantidad máxima de aliados y enemigos
                     var filtered = new List<PlayerInfo>();
                     int alliesCount = 0;
@@ -778,7 +841,8 @@ namespace WoWTest
 
                 // Ordenar y seleccionar los principales
                 var sortedList = new List<DisplayedEnemy>(displayedEnemies.Values);
-                sortedList.Sort((a, b) => {
+                sortedList.Sort((a, b) =>
+                {
                     bool aActive = activeEnemiesOnRadar.Contains(a.Player.Guid);
                     bool bActive = activeEnemiesOnRadar.Contains(b.Player.Guid);
                     if (aActive && !bActive) return -1;
@@ -817,7 +881,7 @@ namespace WoWTest
                 statusMessage = $"Error: {ex.Message}";
             }
 
-            this.Invalidate(); 
+            this.Invalidate();
         }
 
         private void ReloadDynamicConnections()
@@ -986,13 +1050,13 @@ namespace WoWTest
                             character.Facing = transportCoords.Value.Facing;
                         }
                     }
-                    
+
                     character.CastingSpellId = character.Mem.ReadSafe<int>((IntPtr)(curObj + 0xA60));
                     character.ChannelSpellId = character.Mem.ReadSafe<int>((IntPtr)(curObj + 0xA6C));
                     character.CastingSpellId2 = character.Mem.ReadSafe<int>((IntPtr)(curObj + 0xCB0));
-                    
 
-                    
+
+
                     break;
                 }
 
@@ -1032,7 +1096,7 @@ namespace WoWTest
                 {
                     ulong guid = inst.Mem.ReadSafe<ulong>((IntPtr)(curObj + OFFSET_OBJ_GUID));
 
-                    if (guid != inst.Guid) 
+                    if (guid != inst.Guid)
                     {
                         var player = new PlayerInfo { Guid = guid, IsGameObject = (type == 5), IsNPC = (type == 3) };
                         uint descPtr = inst.Mem.ReadSafe<uint>((IntPtr)(curObj + OFFSET_OBJ_DESCRIPTOR));
@@ -1120,7 +1184,7 @@ namespace WoWTest
                             player.Flags = inst.Mem.ReadSafe<uint>((IntPtr)(descPtr + 0xE8));
                             player.AuraState = inst.Mem.ReadSafe<uint>((IntPtr)(descPtr + 0xF0));
                             player.Bytes1 = inst.Mem.ReadSafe<uint>((IntPtr)(descPtr + 0x110));
-                            
+
                             bool hasStealthAura = (player.AuraState & 0x800) != 0;
                             player.IsStealthed = hasStealthAura && (classId == 4 || classId == 11 || player.RaceId == 4);
 
@@ -1190,7 +1254,7 @@ namespace WoWTest
                                     player.Facing = transportCoords.Value.Facing;
                                 }
                             }
-                            
+
                             player.CastingSpellId = inst.Mem.ReadSafe<int>((IntPtr)(curObj + 0xA60));
                             player.ChannelSpellId = inst.Mem.ReadSafe<int>((IntPtr)(curObj + 0xA6C));
                             player.CastingSpellId2 = inst.Mem.ReadSafe<int>((IntPtr)(curObj + 0xCB0));
@@ -1252,7 +1316,7 @@ namespace WoWTest
         {
             if (char1.Connected && char1.Guid == guid) return char1.Name;
             if (char2.Connected && char2.Guid == guid) return char2.Name;
-            
+
             if (playerNameCache.TryGetValue(guid, out string cachedName) && !cachedName.StartsWith("Jugador_"))
                 return cachedName;
 
@@ -1334,7 +1398,7 @@ namespace WoWTest
                                 // Intentar offset alternativo +0x1C
                                 name = ReadString(inst.Mem, currentEntry + 0x1C, 40);
                             }
-                            
+
                             if (!string.IsNullOrEmpty(name))
                             {
                                 guildNameCache[guildId] = name;
@@ -1408,7 +1472,7 @@ namespace WoWTest
                 g.DrawString("O", compassFont, Brushes.Gray, centerX - radarRadius + 6, centerY - 7);
 
                 // Escala para minimapa interactiva zoom/in-out
-                float scale = mapScale; 
+                float scale = mapScale;
 
                 // Graficar jugadores de los alrededores
                 foreach (var p in nearbyPlayers)
@@ -1431,7 +1495,7 @@ namespace WoWTest
                         if (p.IsGameObject && !Config.TrackGameObjects) continue;
                         if (p.IsNPC && !Config.TrackNPCs) continue;
                         if (!p.IsGameObject && !p.IsNPC && !Config.TrackPlayers) continue;
-                        
+
                         if (Config.FilterZAxis && Math.Abs(p.Z - activeChar.Z) > 30f) continue; // Filter by Z-Axis
 
                         bool isCharAlliance = IsAllianceRaceId(activeChar.RaceId);
@@ -1475,7 +1539,7 @@ namespace WoWTest
                         {
                             // 2. Dibujar flecha central rotativa para el jugador de los alrededores (sin bordes)
                             DrawPlayerArrow(g, otherScreenX, otherScreenY, pColor, p.Facing, dotSize);
-                            
+
                             // Indicador Z-Altitude (Arriba o Abajo)
                             float dz = p.Z - activeChar.Z;
                             if (dz > 5f)
@@ -1566,7 +1630,7 @@ namespace WoWTest
         private List<PlayerInfo> SmoothPlayerMovement(List<PlayerInfo> rawPlayers, WoWCharacter activeChar)
         {
             var smoothedList = new List<PlayerInfo>();
-            
+
             // Factor de suavizado (0.0f a 1.0f). Menor valor = más suave pero con un toque de retraso/inercia.
             // 0.15f para posición y 0.12f para rotación brindan una fluidez exquisita libre de saltos.
             float posAlpha = 0.15f;
@@ -1643,7 +1707,7 @@ namespace WoWTest
                     Bytes1 = rp.Bytes1,
                     CastingSpellId = rp.CastingSpellId,
                     ChannelSpellId = rp.ChannelSpellId,
-                    
+
                     // Asignar los valores suavizados
                     X = state.X,
                     Y = state.Y,
@@ -1699,7 +1763,7 @@ namespace WoWTest
                         }
 
                         ghost.IsGhost = true;
-                        
+
                         float dx = activeChar.X - ghost.X;
                         float dy = activeChar.Y - ghost.Y;
                         float dz = activeChar.Z - ghost.Z;
@@ -1863,11 +1927,11 @@ namespace WoWTest
             // Mismos bandos -> Aliados -> Azul brillante neón
             if (isSameFaction)
             {
-                return Color.FromArgb(0, 191, 255); 
+                return Color.FromArgb(0, 191, 255);
             }
 
             // Bando contrario -> Enemigos -> Rojo brillante neón
-            return Color.FromArgb(255, 0, 50); 
+            return Color.FromArgb(255, 0, 50);
         }
 
         static string ReadString(Memory m, uint address, int maxLen)
@@ -2033,12 +2097,13 @@ namespace WoWTest
 
             // Temporizador interno para actualizar el dibujo a 30 FPS
             repaintTimer = new System.Windows.Forms.Timer();
-            repaintTimer.Interval = 33; 
+            repaintTimer.Interval = 33;
             repaintTimer.Tick += (s, e) => this.Invalidate();
             repaintTimer.Start();
 
             // Lógica de clic de ventana de detalles para targetear en el juego
-            this.MouseDown += (s, e) => {
+            this.MouseDown += (s, e) =>
+            {
                 if (e.Button == MouseButtons.Left)
                 {
                     int startY = 4;
@@ -2060,7 +2125,8 @@ namespace WoWTest
             };
 
             // Alineamiento dinámico durante cambio de tamaño de la ventana de detección
-            this.Resize += (s, e) => {
+            this.Resize += (s, e) =>
+            {
                 if (this.Owner != null && !this.Owner.IsDisposed)
                 {
                     this.Location = new Point(this.Owner.Location.X + this.Owner.Width + 6, this.Owner.Location.Y);
@@ -2103,7 +2169,7 @@ namespace WoWTest
             {
                 currentTargets = new List<RadarForm.PlayerInfo>(targets);
                 lastTargetTime = DateTime.Now;
-                
+
                 // Asegurar visibilidad y opacidad premium activa
                 if (!this.Visible)
                 {
@@ -2172,9 +2238,9 @@ namespace WoWTest
                     bool isHighlighted = (i == highlightedSlotIndex && (DateTime.Now - highlightedSlotTime).TotalMilliseconds < 150);
 
                     // Relleno de fondo del contenedor (mezcla premium oscura del color de la clase para evitar el violeta/fucsia de la transparencia)
-                    Color bgClassColor = Color.FromArgb(255, 
-                        (int)(20 * 0.75f + classColor.R * 0.25f), 
-                        (int)(20 * 0.75f + classColor.G * 0.25f), 
+                    Color bgClassColor = Color.FromArgb(255,
+                        (int)(20 * 0.75f + classColor.R * 0.25f),
+                        (int)(20 * 0.75f + classColor.G * 0.25f),
                         (int)(25 * 0.75f + classColor.B * 0.25f));
 
                     if (isHighlighted)
@@ -2381,7 +2447,8 @@ namespace WoWTest
             numMaxAllies.BackColor = Color.FromArgb(32, 34, 38);
             numMaxAllies.ForeColor = Color.White;
             numMaxAllies.BorderStyle = BorderStyle.FixedSingle;
-            numMaxAllies.ValueChanged += (s, e) => {
+            numMaxAllies.ValueChanged += (s, e) =>
+            {
                 radar.Config.MaxAllies = (int)numMaxAllies.Value;
                 radar.SaveConfig();
             };
@@ -2410,7 +2477,8 @@ namespace WoWTest
             numMaxEnemies.BackColor = Color.FromArgb(32, 34, 38);
             numMaxEnemies.ForeColor = Color.White;
             numMaxEnemies.BorderStyle = BorderStyle.FixedSingle;
-            numMaxEnemies.ValueChanged += (s, e) => {
+            numMaxEnemies.ValueChanged += (s, e) =>
+            {
                 radar.Config.MaxEnemies = (int)numMaxEnemies.Value;
                 radar.SaveConfig();
             };
@@ -2445,7 +2513,7 @@ namespace WoWTest
             cbAudioFaction.FlatStyle = FlatStyle.Flat;
             this.Controls.Add(cbAudioFaction);
             yOffset += 35;
-            
+
             CheckBox chkRogue = CreateCheckBox("[Defensa] Anti-Pícaro (Snapline)", radar.Config.AntiRogueAlerts, yOffset);
             yOffset += 35;
 
@@ -2468,7 +2536,8 @@ namespace WoWTest
             numMaxDetails.BackColor = Color.FromArgb(32, 34, 38);
             numMaxDetails.ForeColor = Color.White;
             numMaxDetails.BorderStyle = BorderStyle.FixedSingle;
-            numMaxDetails.ValueChanged += (s, e) => {
+            numMaxDetails.ValueChanged += (s, e) =>
+            {
                 radar.Config.MaxDetailTargets = (int)numMaxDetails.Value;
                 radar.SaveConfig();
                 if (radar.detailsForm != null && !radar.detailsForm.IsDisposed)
@@ -2495,7 +2564,8 @@ namespace WoWTest
             numDisplayTime.BackColor = Color.FromArgb(32, 34, 38);
             numDisplayTime.ForeColor = Color.White;
             numDisplayTime.BorderStyle = BorderStyle.FixedSingle;
-            numDisplayTime.ValueChanged += (s, e) => {
+            numDisplayTime.ValueChanged += (s, e) =>
+            {
                 radar.Config.InfoDisplayTime = (int)numDisplayTime.Value;
                 radar.SaveConfig();
             };
@@ -2529,7 +2599,8 @@ namespace WoWTest
             btnBrowse.BackColor = Color.FromArgb(45, 48, 54);
             btnBrowse.ForeColor = Color.White;
             btnBrowse.Cursor = Cursors.Hand;
-            btnBrowse.Click += (s, e) => {
+            btnBrowse.Click += (s, e) =>
+            {
                 bool oldSettingsTopMost = this.TopMost;
                 bool oldRadarTopMost = radar.TopMost;
                 bool oldDetailsTopMost = radar.detailsForm != null ? radar.detailsForm.TopMost : false;
@@ -2561,12 +2632,14 @@ namespace WoWTest
             };
             this.Controls.Add(btnBrowse);
 
-            txtCustomSound.TextChanged += (s, e) => {
+            txtCustomSound.TextChanged += (s, e) =>
+            {
                 radar.Config.CustomSoundPath = txtCustomSound.Text;
                 radar.SaveConfig();
             };
 
-            chkPlayers.CheckedChanged += (s, e) => {
+            chkPlayers.CheckedChanged += (s, e) =>
+            {
                 radar.Config.TrackPlayers = chkPlayers.Checked;
                 chkAllies.Enabled = chkPlayers.Checked;
                 chkEnemies.Enabled = chkPlayers.Checked;
@@ -2579,41 +2652,47 @@ namespace WoWTest
                 radar.SaveConfig();
             };
 
-            chkAllies.CheckedChanged += (s, e) => { 
-                radar.Config.TrackAllies = chkAllies.Checked; 
+            chkAllies.CheckedChanged += (s, e) =>
+            {
+                radar.Config.TrackAllies = chkAllies.Checked;
                 chkColorAllies.Enabled = chkPlayers.Checked && chkAllies.Checked;
                 lblMaxAllies.Enabled = chkPlayers.Checked && chkAllies.Checked;
                 numMaxAllies.Enabled = chkPlayers.Checked && chkAllies.Checked;
-                radar.SaveConfig(); 
+                radar.SaveConfig();
             };
 
-            chkEnemies.CheckedChanged += (s, e) => { 
-                radar.Config.TrackEnemies = chkEnemies.Checked; 
+            chkEnemies.CheckedChanged += (s, e) =>
+            {
+                radar.Config.TrackEnemies = chkEnemies.Checked;
                 chkColorEnemies.Enabled = chkPlayers.Checked && chkEnemies.Checked;
                 lblMaxEnemies.Enabled = chkPlayers.Checked && chkEnemies.Checked;
                 numMaxEnemies.Enabled = chkPlayers.Checked && chkEnemies.Checked;
-                radar.SaveConfig(); 
+                radar.SaveConfig();
             };
 
-            chkColorAllies.CheckedChanged += (s, e) => {
+            chkColorAllies.CheckedChanged += (s, e) =>
+            {
                 radar.Config.ColorAlliesByClass = chkColorAllies.Checked;
                 radar.SaveConfig();
             };
 
-            chkColorEnemies.CheckedChanged += (s, e) => {
+            chkColorEnemies.CheckedChanged += (s, e) =>
+            {
                 radar.Config.ColorEnemiesByClass = chkColorEnemies.Checked;
                 radar.SaveConfig();
             };
 
             chkNodes.CheckedChanged += (s, e) => { radar.Config.TrackGameObjects = chkNodes.Checked; radar.SaveConfig(); };
             chkNPCs.CheckedChanged += (s, e) => { radar.Config.TrackNPCs = chkNPCs.Checked; radar.SaveConfig(); };
-            chkAudio.CheckedChanged += (s, e) => {
+            chkAudio.CheckedChanged += (s, e) =>
+            {
                 radar.Config.PlayAudioAlerts = chkAudio.Checked;
                 lblAudioFaction.Enabled = chkAudio.Checked;
                 cbAudioFaction.Enabled = chkAudio.Checked;
                 radar.SaveConfig();
             };
-            cbAudioFaction.SelectedIndexChanged += (s, e) => {
+            cbAudioFaction.SelectedIndexChanged += (s, e) =>
+            {
                 radar.Config.AudioAlertFaction = cbAudioFaction.SelectedIndex;
                 radar.SaveConfig();
             };
@@ -2643,16 +2722,17 @@ namespace WoWTest
             chk.FlatStyle = FlatStyle.Standard;
             chk.ForeColor = Color.White;
             chk.Cursor = Cursors.Hand;
-            
+
             // Workaround para ventanas superpuestas (TopMost) que no roban el foco de Windows:
             chk.AutoCheck = false;
-            chk.MouseDown += (s, e) => {
+            chk.MouseDown += (s, e) =>
+            {
                 if (e.Button == MouseButtons.Left)
                 {
                     chk.Checked = !chk.Checked;
                 }
             };
-            
+
             this.Controls.Add(chk);
             return chk;
         }
