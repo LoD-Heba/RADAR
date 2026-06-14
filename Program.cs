@@ -388,13 +388,14 @@ namespace WoWTest
         public RadarConfig Config = new RadarConfig();
         private SettingsForm settingsForm = null!;
         private System.Media.SoundPlayer? customPlayer = null;
+        private bool wasSettingsOpenBeforeHide = false; // Guarda si los ajustes estaban abiertos
 
         private void PlayDetectionSound()
         {
             try
             {
                 // Ruta fija del sonido por defecto en la carpeta del ejecutable
-                string rutaSonidoPorDefecto = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "neadby.wav");
+                string rutaSonidoPorDefecto = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "nearby.wav");
 
                 if (System.IO.File.Exists(rutaSonidoPorDefecto))
                 {
@@ -597,10 +598,16 @@ namespace WoWTest
                     if (settingsForm == null || settingsForm.IsDisposed)
                     {
                         settingsForm = new SettingsForm(this);
+                        settingsForm.FormClosed += (senderForm, argsForm) =>
+                        {
+                            wasSettingsOpenBeforeHide = false;
+                        };
                         settingsForm.Show();
                     }
                     else
                     {
+                        // Si ya existía pero estaba oculta por el bug, la volvemos a encender
+                        if (!settingsForm.Visible) settingsForm.Visible = true;
                         settingsForm.BringToFront();
                     }
                 }
@@ -635,9 +642,8 @@ namespace WoWTest
                             guildNameCache.Clear();
                         }
 
+                        // El escáner ahora recibe los datos dinámicos ya corregidos desde UpdateCharData
                         var rawPlayers = GetNearbyPlayers(activeChar);
-
-
 
                         lock (dataLock)
                         {
@@ -730,15 +736,36 @@ namespace WoWTest
                         if (shouldHide)
                         {
                             if (this.Visible) this.Visible = false;
-                            if (detailsForm != null && detailsForm.Visible) detailsForm.Visible = false;
-                            if (settingsForm != null && settingsForm.Visible) settingsForm.Visible = false;
+
+                            // Si los detalles de enemigos están visibles, los apagamos
+                            if (detailsForm != null && detailsForm.Visible)
+                            {
+                                detailsForm.Visible = false;
+                            }
+
+                            // Si los ajustes están abiertos, recordamos que lo estaban antes de ocultarlos
+                            if (settingsForm != null && settingsForm.Visible)
+                            {
+                                wasSettingsOpenBeforeHide = true;
+                                settingsForm.Visible = false;
+                            }
                         }
                         else
                         {
                             if (!this.Visible) this.Visible = true;
-                            if (detailsForm != null && !detailsForm.Visible && detailsForm.Opacity > 0.35)
+
+                            // CORRECCIÓN CRÍTICA: Usamos 'displayedEnemies.Count' que ya existe en esta línea
+                            // para decidir si restaurar visualmente la ventana de detalles de enemigos
+                            if (detailsForm != null && !detailsForm.Visible && displayedEnemies.Count > 0)
                             {
                                 detailsForm.Visible = true;
+                            }
+
+                            // AL REGRESAR AL JUEGO: Si los ajustes estaban abiertos, los volvemos a encender
+                            if (settingsForm != null && wasSettingsOpenBeforeHide)
+                            {
+                                settingsForm.Visible = true;
+                                wasSettingsOpenBeforeHide = false; // Reseteamos la bandera de control
                             }
                         }
                     }
